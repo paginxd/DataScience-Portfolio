@@ -95,13 +95,10 @@
 ## Инструкция по запуску проекта
 1. Склонируйте репозиторий:
 
-``git clone https://github.com/paginxd/SF-ML-Homeworks.git``
+``git clone https://github.com/paginxd/DataScience-Portfolio.git``
 
 
 2. Перейдите в папку проекта:
-
-``cd Сессионое задание``
-
 
 3. Установите необходимые библиотеки:
 
