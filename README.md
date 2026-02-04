@@ -4,6 +4,6 @@
 
 | Название проекта       | Описание | Используемые библиотеки |
 |------------------------|----------|------------------------|
-| [Проект 0. Игра: Угадай число](https://github.com/paginxd/DataScience-Portfolio/tree/main/project%200) | Это тестовый проект |`numpy`|
+| [Проект 0. Игра: Угадай число](https://github.com/paginxd/DataScience-Portfolio/tree/main/project-0) | Это тестовый проект |`numpy`|
 | [Проект 1. Анализ резюме с HeadHunter](https://github.com/paginxd/DataScience-Portfolio/tree/main/Project-1-HH-Resume-Analysis) |Проведен анализ данных о соискателях с платформы HeadHunter. Выполнена предобработка, очистка и визуализация данных для подготовки набора данных к построению модели прогнозирования уровня заработной платы.|`numpy`, `pandas`, `matplotlib`, `seaborn`, `plotly` |
-| [Проект 2. Классификация отходов]() | Проект демонстрирует применение предобученной модели машинного обучения для классификации отходов по изображению |`transformers`|
+| [Проект 2. Классификация отходов](https://github.com/paginxd/DataScience-Portfolio/tree/main/Project-2-Waste-Classification) | Проект демонстрирует применение предобученной модели машинного обучения для классификации отходов по изображению |`transformers`|
