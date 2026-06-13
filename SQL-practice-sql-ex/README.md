@@ -435,11 +435,241 @@ GROUP BY country;
 ```
 
 ## Задача 33: Укажите корабли, потопленные в сражениях в Северной Атлантике (North Atlantic). 
-Вывод: ship  
+Вывод: ship    
 Таблица: Корабли
 
 ```sql
 SELECT ship
 FROM Outcomes
 WHERE battle = 'North Atlantic' AND result = 'sunk'
+```
+
+## Задача 34: По Вашингтонскому международному договору от начала 1922 г. запрещалось строить линейные корабли водоизмещением более 35 тыс.тонн. Укажите корабли, нарушившие этот договор (учитывать только корабли c известным годом спуска на воду). 
+Вывести: названия кораблей  
+Таблица: Корабли
+```sql 
+SELECT name
+FROM Ships s
+LEFT JOIN Classes c ON s.class = c.class
+WHERE launched IS NOT NULL
+  AND type = 'bb'
+  AND displacement > 35000
+  AND launched >= 1922;
+```
+
+## Задача 35: В таблице Product найти модели, которые состоят только из цифр или только из латинских букв (A-Z, без учета регистра).
+Вывести: номер модели, тип модели.
+Таблица: Компьютерная фирма
+
+```sql
+SELECT model, type
+FROM Product
+WHERE model NOT LIKE '%[^A-Z]%' --в строке НЕТ символов, которые НЕ буквы (Символ ^ внутри [] означает отрицание)
+  OR model NOT LIKE '%[^0-9]%' --в строке НЕТ символов, которые НЕ цифры 
+``` 
+
+## Задача 36: Перечислите названия головных кораблей, имеющихся в базе данных (учесть корабли в Outcomes).
+Таблица: Корабли
+
+```sql
+SELECT class
+FROM Classes
+WHERE class IN (
+    SELECT name FROM Ships
+    UNION
+    SELECT ship FROM Outcomes
+)
+```
+
+## Задача 37: Найдите классы, в которые входит только один корабль из базы данных (учесть также корабли в Outcomes).
+Таблица: Корабли
+
+```sql  
+WITH all_ships_classes AS (
+    SELECT name AS ship, class FROM Ships
+    UNION
+    SELECT o.ship AS ship, o.ship AS class
+    FROM Outcomes o
+    LEFT JOIN Ships s ON o.ship = s.name
+    WHERE s.name IS NULL
+      AND EXISTS (SELECT 1 FROM Classes c WHERE c.class = o.ship)
+)
+SELECT class
+FROM all_ships_classes
+GROUP BY class
+HAVING COUNT(*) = 1
+```
+
+## Задача 38: Найдите страны, имевшие когда-либо классы обычных боевых кораблей ('bb') и имевшие когда-либо классы крейсеров ('bc').
+Таблица: Корабли
+
+```sql 
+SELECT country
+FROM Classes
+WHERE type IN ('bb', 'bc')
+GROUP BY country
+HAVING COUNT(DISTINCT type) = 2 --если есть только 'bb' или только 'bc', то будет 1, если оба типа, то будет 2
+```
+
+## Задача 39: Найдите классы кораблей, которые были потоплены в сражениях, в которых участвовали корабли класса 'bb'.
+Таблица: Корабли
+
+```sql 
+SELECT DISTINCT o1.ship 
+FROM Outcomes o1
+JOIN Battles b1 ON b1.name = o1.battle
+WHERE o1.result = 'damaged'
+  AND EXISTS (
+      SELECT 1
+      FROM Outcomes o2
+      JOIN Battles b2 ON b2.name = o2.battle
+      WHERE o2.ship = o1.ship
+        AND b2.date > b1.date
+  );
+```
+
+## Задача 40: Найти производителей, которые выпускают более одной модели, при этом все выпускаемые производителем модели являются продуктами одного типа.
+Вывести: maker, type
+Таблица: Компьютерная фирма
+
+```sql
+SELECT maker, MAX(type) AS type
+FROM product
+GROUP BY maker
+HAVING COUNT(model) > 1
+   AND COUNT(DISTINCT type) = 1;
+```
+
+## Задача 41:Для каждого производителя, у которого присутствуют модели хотя бы в одной из таблиц PC, Laptop или Printer, определить максимальную цену на его продукцию.
+Вывод: имя производителя, если среди цен на продукцию данного производителя присутствует NULL, то выводить для этого производителя NULL,
+иначе максимальную цену.
+Таблица: Компьютерная фирма
+
+```sql
+SELECT 
+    maker, 
+    CASE 
+        WHEN COUNT(*) = COUNT(t.price) 
+            THEN MAX(t.price) 
+    END AS max_price
+FROM Product p
+JOIN (
+    SELECT model, price FROM PC
+    UNION
+    SELECT model, price FROM Laptop
+    UNION
+    SELECT model, price FROM Printer
+) t 
+    ON t.model = p.model
+GROUP BY maker
+HAVING COUNT(DISTINCT p.model) > 0;
+```
+
+## Задача 42: Найдите названия кораблей, потопленных в сражениях, и название сражения, в котором они были потоплены.
+Таблица: Корабли
+
+```sql
+Select ship, battle
+from Outcomes 
+where result = 'sunk'
+```
+
+## Задача 43: Укажите сражения, которые произошли в годы, не совпадающие ни с одним из годов спуска кораблей на воду.
+Таблица: Корабли
+ы
+```sql
+SELECT name
+FROM Battles
+WHERE YEAR(date) NOT IN (
+    SELECT launched
+    FROM Ships
+    WHERE launched IS NOT NULL
+);
+```
+
+## Задача 44: Найдите названия всех кораблей в базе данных, начинающихся с буквы R.
+Таблица: Корабли
+
+```sql
+SELECT ship
+FROM outcomes
+WHERE ship LIKE 'R%'
+UNION
+SELECT name
+FROM ships
+WHERE name LIKE 'R%'
+```
+
+## Задача 45: Найдите названия всех кораблей в базе данных, состоящие из трех и более слов (например, King George V). Считать, что слова в названиях разделяются единичными пробелами, и нет концевых пробелов.
+Таблица: Корабли
+
+```sql
+SELECT ship
+FROM outcomes
+WHERE ship LIKE '% % %'
+UNION
+SELECT name
+FROM ships
+WHERE name LIKE '% % %'
+```
+
+## Задача 46: Для каждого корабля, участвовавшего в сражении при Гвадалканале (Guadalcanal), вывести название, водоизмещение и число орудий.
+Таблица: Корабли
+
+```sql
+SELECT DISTINCT ship, displacement, numGuns
+FROM Classes c
+LEFT JOIN Ships s
+    ON c.class = s.class
+RIGHT JOIN Outcomes o
+    ON s.name = o.ship
+    OR c.class = o.ship -- так как по условию в outcomes могут быть корабли которых нет в Ships
+WHERE battle = 'Guadalcanal';
+```
+
+## Задача 47: Определить страны, которые потеряли в сражениях все свои корабли.
+Таблица: Корабли
+
+```sql
+WITH temp AS (
+    SELECT s.name, c.country
+    FROM classes c
+    JOIN ships s
+        ON s.class = c.class
+
+    UNION
+
+    SELECT o.ship AS name, c.country
+    FROM classes c
+    JOIN outcomes o
+        ON o.ship = c.class
+),
+
+temp2 AS (
+    SELECT country, COUNT(*) AS count -- всего кораблей по странам
+    FROM temp
+    GROUP BY country
+),
+
+temp3 AS (
+    SELECT country, COUNT(*) AS count_sunk -- потопленных кораблей по странам
+    FROM temp
+    JOIN outcomes o
+        ON o.ship = temp.name
+    WHERE o.result = 'sunk'
+    GROUP BY country
+)
+
+SELECT temp3.country
+FROM temp3
+JOIN temp2
+    ON temp2.country = temp3.country
+   AND temp2.count = temp3.count_sunk;
+```
+
+## Задача 48: Найдите классы кораблей, в которых хотя бы один корабль был потоплен в сражении.
+Таблица: Корабли
+
+```sql
+
 ```
